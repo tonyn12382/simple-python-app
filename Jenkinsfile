@@ -29,8 +29,7 @@ pipeline {
             steps {
                 sh '''
                 . venv/bin/activate
-                # Run pytest if you want nicer output, otherwise unittest works too
-                pytest --maxfail=1 --disable-warnings -q || python3 -m unittest discover -s . -p "test_*.py"
+                pytest tests --maxfail=1 --disable-warnings -q
                 '''
             }
         }
