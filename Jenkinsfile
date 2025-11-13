@@ -17,7 +17,6 @@ pipeline {
         stage('Setup Virtualenv') {
             steps {
                 sh '''
-                # Create a virtual environment
                 python3 -m venv venv
                 . venv/bin/activate
                 pip install --upgrade pip
@@ -30,7 +29,8 @@ pipeline {
             steps {
                 sh '''
                 . venv/bin/activate
-                python -m unittest discover -s tests -p "test_*.py"
+                # Run pytest if you want nicer output, otherwise unittest works too
+                pytest --maxfail=1 --disable-warnings -q || python3 -m unittest discover -s . -p "test_*.py"
                 '''
             }
         }
