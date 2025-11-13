@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // Using your provided bot token and room ID directly
         WEBEX_BOT_TOKEN = 'MDM1MzBlMTQtZTUwYi00MmU1LTk3YTItOWZlZTFmYTRkN2I1OTFlMDcyNGQtYWMy_P0A1_e58072af-9d57-4b13-abf7-eb3b506c964d'
         WEBEX_ROOM_ID   = '09e40a50-8590-11f0-a6a6-01d219d77e7a'
     }
@@ -17,7 +16,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                // Use python3 if installed in container, otherwise python
+                // Try python3 first, fallback to python if that's the binary available
                 sh 'python3 -m pip install --upgrade pip || python -m pip install --upgrade pip'
                 sh 'python3 -m pip install -r requirements.txt || python -m pip install -r requirements.txt || true'
             }
@@ -25,8 +24,8 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                // Discover all test_*.py files including test_calc.py
-                sh 'python3 -m unittest discover -s . -p "test_*.py" || python -m unittest discover -s . -p "test_*.py"'
+                // Run tests from the tests/ folder
+                sh 'python3 -m unittest discover -s tests -p "test_*.py" || python -m unittest discover -s tests -p "test_*.py"'
             }
         }
     }
