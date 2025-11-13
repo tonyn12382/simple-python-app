@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Store your bot token securely in Jenkins credentials
-        WEBEX_BOT_TOKEN = credentials('webex-bot-token')  
+        // Using your provided bot token and room ID directly
+        WEBEX_BOT_TOKEN = 'MDM1MzBlMTQtZTUwYi00MmU1LTk3YTItOWZlZTFmYTRkN2I1OTFlMDcyNGQtYWMy_P0A1_e58072af-9d57-4b13-abf7-eb3b506c964d'
         WEBEX_ROOM_ID   = '09e40a50-8590-11f0-a6a6-01d219d77e7a'
     }
 
@@ -11,20 +11,22 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/<your-username>/<your-repo>.git'
+                    url: 'https://github.com/tonyn12382/simple-python-app.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'python3 -m pip install --upgrade pip'
-                sh 'python3 -m pip install -r requirements.txt || true'
+                // Use python3 if installed in container, otherwise python
+                sh 'python3 -m pip install --upgrade pip || python -m pip install --upgrade pip'
+                sh 'python3 -m pip install -r requirements.txt || python -m pip install -r requirements.txt || true'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                sh 'python3 -m unittest discover'
+                // Discover all test_*.py files including test_calc.py
+                sh 'python3 -m unittest discover -s . -p "test_*.py" || python -m unittest discover -s . -p "test_*.py"'
             }
         }
     }
