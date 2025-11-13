@@ -1,5 +1,7 @@
+# tests/test_calc.py
+
 import pytest
-from app import calc
+from app import calc   # ✅ put this at the top
 
 def test_add():
     assert calc.add(2, 3) == 5

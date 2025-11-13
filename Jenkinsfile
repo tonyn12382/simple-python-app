@@ -29,6 +29,7 @@ pipeline {
             steps {
                 sh '''
                 . venv/bin/activate
+                export PYTHONPATH=$PYTHONPATH:$(pwd)
                 pytest tests --maxfail=1 --disable-warnings -q
                 '''
             }
