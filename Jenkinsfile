@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        BOT_TOKEN = "NGZhZWIxMDAtMGU4OC00NTUwLThmZTQtYmQ3MWY1MTZmODM2NDRlODY3NGItYjVl_P0A1_e58072af" // your real bot token
-        ROOM_ID   = "54c143f0-c03f-11f0-8ba9-e9128841882b" // your room ID
+        BOT_TOKEN = "MDM1MzBlMTQtZTUwYi00MmU1LTk3YTItOWZlZTFmYTRkN2I1OTFlMDcyNGQtYWMy_P0A1_e58072af-9d57-4b13-abf7-eb3b506c964d"
+        ROOM_ID   = "09e40a50-8590-11f0-a6a6-01d219d77e7a"
     }
 
     stages {
@@ -15,42 +15,49 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                // Make sure Python is installed in the container
-                sh 'python -m pip install --upgrade pip'
-                sh 'pip install -r requirements.txt'
+                bat 'python -m pip install --upgrade pip'
+                bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'pytest'
+                bat 'pytest'
             }
         }
 
         stage('Notify WebEx') {
             steps {
-                script {
-                    def message = "✅ Jenkins build for branch ${env.BRANCH_NAME} completed successfully."
-                    sh """curl -s -X POST \
-                        -H "Authorization: Bearer ${BOT_TOKEN}" \
-                        -H "Content-Type: application/json" \
-                        -d '{ "roomId": "${ROOM_ID}", "text": "${message}" }' \
-                        https://webexapis.com/v1/messages"""
+                powershell """
+                \$headers = @{
+                    'Authorization' = 'Bearer ${env.BOT_TOKEN}'
+                    'Content-Type' = 'application/json'
                 }
+                \$body = @{
+                    roomId = '${env.ROOM_ID}'
+                    text   = '✅ Jenkins build for branch ${env.BRANCH_NAME} completed successfully.'
+                } | ConvertTo-Json
+
+                Invoke-RestMethod -Uri 'https://webexapis.com/v1/messages' -Method Post -Headers \$headers -Body \$body
+                """
             }
         }
     }
 
     post {
         failure {
-            script {
-                def failMessage = "❌ Jenkins build FAILED for branch ${env.BRANCH_NAME}."
-                sh """curl -s -X POST \
-                    -H "Authorization: Bearer ${BOT_TOKEN}" \
-                    -H "Content-Type: application/json" \
-                    -d '{ "roomId": "${ROOM_ID}", "text": "${failMessage}" }' \
-                    https://webexapis.com/v1/messages"""
+            powershell """
+            \$headers = @{
+                'Authorization' = 'Bearer ${env.BOT_TOKEN}'
+                'Content-Type' = 'application/json'
             }
+            \$body = @{
+                roomId = '${env.ROOM_ID}'
+                text   = '❌ Jenkins build FAILED for branch ${env.BRANCH_NAME}.'
+            } | ConvertTo-Json
+
+            Invoke-RestMethod -Uri 'https://webexapis.com/v1/messages' -Method Post -Headers \$headers -Body \$body
+            """
         }
     }
 }
