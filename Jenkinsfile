@@ -14,18 +14,24 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Setup Virtualenv') {
             steps {
-                // Try python3 first, fallback to python if that's the binary available
-                sh 'python3 -m pip install --upgrade pip || python -m pip install --upgrade pip'
-                sh 'python3 -m pip install -r requirements.txt || python -m pip install -r requirements.txt || true'
+                sh '''
+                # Create a virtual environment
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt || true
+                '''
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                // Run tests from the tests/ folder
-                sh 'python3 -m unittest discover -s tests -p "test_*.py" || python -m unittest discover -s tests -p "test_*.py"'
+                sh '''
+                . venv/bin/activate
+                python -m unittest discover -s tests -p "test_*.py"
+                '''
             }
         }
     }
